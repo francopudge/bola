@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator Dice Gol</title>
+      <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        /* Reset & Base */
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            text-align: center; 
+            background: #f0f2f5; 
+            margin: 0; 
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center; 
+            min-height: 100vh;
+            overflow: hidden; 
+        }
+        
+        .container { 
+            background: white; 
+            padding: 20px; 
+            width: 100%; 
+            max-width: 450px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            max-height: 95vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-logo {
+            width: 80%;
+            max-width: 220px;
+            margin: 10px auto 20px;
+        }
+
+        /* Menu & Buttons */
+        .menu-screen { display: flex; flex-direction: column; gap: 12px; }
+        .menu-btn { 
+            padding: 18px; font-size: 18px; font-weight: bold; 
+            background: #2d3436; color: white; border: none; 
+            border-radius: 12px; cursor: pointer;
+        }
+
+        /* Rulebook Style */
+        .rulebook-img {
+            width: 250px; /* Ukuran sesuai permintaan */
+            height: auto;
+            border-radius: 10px;
+            margin: 0 auto 15px;
+            display: block;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Grid Negara */
+        .team-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin: 15px 0; 
+        }
+        .team-card { 
+            border: 2px solid #eee; 
+            border-radius: 12px; 
+            padding: 8px; 
+            cursor: pointer; 
+            background: #fff;
+            transition: 0.2s;
+        }
+        .team-card img { 
+            width: 100%; 
+            aspect-ratio: 3/2; 
+            object-fit: cover; 
+            border-radius: 6px; 
+            display: block;
+        }
+        .team-card p { font-size: 12px; margin: 8px 0 0; font-weight: bold; color: #333; }
+        
+        .selected-player { border-color: #0984e3; background: #e1f5fe; box-shadow: 0 0 10px rgba(9,132,227,0.3); }
+        .selected-ai { border-color: #ce1126; background: #ffebee; box-shadow: 0 0 10px rgba(206,17,38,0.3); }
+
+        /* Gameplay Area */
+        .scoreboard { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ddd;
+        }
+        .team-display img { width: 80px; aspect-ratio: 3/2; object-fit: cover; border-radius: 8px; }
+        .score-num { font-size: 40px; font-weight: 800; color: #2d3436; }
+
+        .status-msg { font-size: 1.1rem; font-weight: bold; margin: 15px 0; color: #d63031; }
+        
+        .action-btn { 
+            padding: 16px; font-size: 16px; font-weight: bold; cursor: pointer; 
+            border: none; border-radius: 12px; width: 100%; margin-bottom: 10px;
+        }
+        
+        #btnRoll { background: #ce1126; color: white; box-shadow: 0 4px #a50d1d; }
+        #btnRoll:active { transform: translateY(2px); box-shadow: 0 2px #a50d1d; }
+        #btnStart { background: #00b894; color: white; margin-top: 10px; }
+
+        .log { 
+            text-align: left; 
+            height: 100px; 
+            overflow-y: auto; 
+            background: #2d3436; 
+            color: #fab1a0; 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 12px; 
+            margin-top: 15px; 
+        }
+
+        .scroll-area { 
+            max-height: 50vh; 
+            overflow-y: auto; 
+            padding-right: 5px; 
+        }
+        
+        /* Menghapus Header & Footer sesuai permintaan */
+        header, footer { display: none !important; }
+    </style>
+</head>
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="Street Football - Opening.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+    <div id="mainMenu" class="menu-screen">
+        <img src="logo.png" alt="Dice Gol" class="main-logo" onerror="this.src='https://via.placeholder.com/300x120?text=DICE+GOL+ASIA'">
+        <button class="menu-btn" onclick="showScreen('draftArea')">MAIN SEKARANG</button>
+        <button class="menu-btn" style="background:#636e72;" onclick="showScreen('rulebookView')">CARA BERMAIN</button>
+    </div>
+
+    <div id="rulebookView" style="display:none;">
+        <h3 style="margin-top:0;">RULEBOOK</h3>
+        <img src="rulebook.png" alt="Rule" class="rulebook-img" onerror="this.src='https://via.placeholder.com/250x350?text=Kocok+Dadu+4-6=GOL!'">
+        <button class="action-btn" style="background:#2d3436; color:white;" onclick="showScreen('mainMenu')">KEMBALI</button>
+    </div>
+
+    <div id="draftArea" style="display:none;">
+        <h3 style="margin-top:0;">PILIH NEGARA</h3>
+        <button id="btnMusic" class="action-btn" style="background:#6c5ce7; color:white; padding:10px; font-size:12px;" onclick="toggleMusic()">🎵 MUSIK: OFF</button>
+        
+        <div class="scroll-area">
+            <p style="text-align:left; font-weight:bold; color:#0984e3; margin:5px 0;">🚩 Pilih Tim Kamu:</p>
+            <div class="team-grid" id="playerGrid"></div>
+            <p style="text-align:left; font-weight:bold; color:#d63031; margin:5px 0;">🤖 Pilih Musuh (AI):</p>
+            <div class="team-grid" id="aiGrid"></div>
+        </div>
+
+        <button id="btnStart" class="action-btn" onclick="startGame()">MASUK LAPANGAN</button>
+        <button class="action-btn" style="background:#b2bec3; color:white;" onclick="showScreen('mainMenu')">BATAL</button>
+    </div>
+
+    <div id="gameArea" style="display:none;">
+        <div id="standardScore" class="scoreboard">
+            <div class="team-display">
+                <img id="imgMe" src="">
+                <div class="score-num" id="scoreMe">0</div>
+                <div id="labelMe" style="font-size:12px; font-weight:bold">SAYA</div>
+            </div>
+            <div style="font-size:20px; font-weight:bold; color: #b2bec3;">VS</div>
+            <div class="team-display">
+                <img id="imgAI" src="">
+                <div class="score-num" id="scoreAI">0</div>
+                <div id="labelAI" style="font-size:12px; font-weight:bold">AI</div>
+            </div>
+        </div>
+
+        <div id="winnerView" style="display:none; padding:10px;">
+            <h2 id="winnerTitleText" style="color:#f1c40f; margin-top:0;">CHAMPION!</h2>
+            <img id="imgWinner" src="" style="width:180px; aspect-ratio:3/2; object-fit:cover; border-radius:12px; border:5px solid #ffd700;">
+            <h3 id="winnerNameText">NEGARA</h3>
+        </div>
+
+        <div id="status" class="status-msg">Siap Tanding?</div>
+        <button id="btnRoll" class="action-btn" onclick="playRound()">TENDANG! (Ronde 1)</button>
+        <button id="btnReset" class="action-btn" style="display:none; background:#2d3436; color:white;" onclick="location.reload()">MAIN LAGI</button>
+        
+        <div class="log" id="log">--- Log Pertandingan ---</div>
+    </div>
+</div>
+
+<script>
+    const teams = [
+        { id: 0, name: "Indonesia", img: "indo.jpg" }, 
+        { id: 1, name: "Malaysia", img: "malay.jpg" }, 
+        { id: 2, name: "Thailand", img: "thai.jpg" }, 
+        { id: 3, name: "Jepang", img: "japan.jpg" }, 
+        { id: 4, name: "Korea", img: "korea.jpg" }, 
+        { id: 5, name: "Saudi", img: "saudi.jpg" }, 
+        { id: 6, name: "Pakistan", img: "pakistan.jpg" }, 
+        { id: 7, name: "Rusia", img: "russia.jpg" }, 
+        { id: 8, name: "Qatar", img: "qatar.jpg" }
+    ];
+
+    let selectedPlayer = null, selectedAI = null;
+    let myScore = 0, aiScore = 0, round = 1, isGameOver = false;
+    const music = document.getElementById('bgMusic');
+
+    function toggleMusic() {
+        const btn = document.getElementById('btnMusic');
+        if (music.paused) { music.play(); btn.innerText = "🎵 MUSIK: ON"; btn.style.background = "#27ae60"; }
+        else { music.pause(); btn.innerText = "🎵 MUSIK: OFF"; btn.style.background = "#6c5ce7"; }
+    }
+
+    function showScreen(id) {
+        ['mainMenu', 'rulebookView', 'draftArea', 'gameArea'].forEach(s => document.getElementById(s).style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function init() {
+        const pGrid = document.getElementById('playerGrid'), aGrid = document.getElementById('aiGrid');
+        teams.forEach(t => {
+            const card = (type) => `
+                <div class="team-card" id="${type}-card-${t.id}" onclick="selectTeam('${type}', ${t.id})">
+                    <img src="${t.img}" onerror="this.src='https://via.placeholder.com/120x80?text=${t.name}'">
+                    <p>${t.name}</p>
+                </div>`;
+            pGrid.innerHTML += card('p'); 
+            aGrid.innerHTML += card('a');
+        });
+    }
+
+    function selectTeam(type, id) {
+        if (type === 'p') {
+            if (selectedPlayer !== null) document.getElementById(`p-card-${selectedPlayer}`).classList.remove('selected-player');
+            selectedPlayer = id; document.getElementById(`p-card-${id}`).classList.add('selected-player');
+        } else {
+            if (selectedAI !== null) document.getElementById(`a-card-${selectedAI}`).classList.remove('selected-ai');
+            selectedAI = id; document.getElementById(`a-card-${id}`).classList.add('selected-ai');
+        }
+    }
+
+    function startGame() {
+        if (selectedPlayer === null || selectedAI === null) return alert("Pilih tim kamu dan lawan!");
+        document.getElementById('imgMe').src = teams[selectedPlayer].img;
+        document.getElementById('labelMe').innerText = teams[selectedPlayer].name;
+        document.getElementById('imgAI').src = teams[selectedAI].img;
+        document.getElementById('labelAI').innerText = teams[selectedAI].name;
+        showScreen('gameArea');
+    }
+
+    function playRound() {
+        if (isGameOver) return;
+        let pRoll = Math.floor(Math.random() * 6) + 1, aRoll = Math.floor(Math.random() * 6) + 1;
+        
+        let logMsg = `R${round}: `;
+        if (pRoll >= 4) { myScore++; logMsg += `GOL (${pRoll}) vs `; } else { logMsg += `MISS (${pRoll}) vs `; }
+        if (aRoll >= 4) { aiScore++; logMsg += `GOL (${aRoll})`; } else { logMsg += `MISS (${aRoll})`; }
+        
+        document.getElementById('scoreMe').innerText = myScore;
+        document.getElementById('scoreAI').innerText = aiScore;
+        document.getElementById('log').innerHTML = `<div>${logMsg}</div>` + document.getElementById('log').innerHTML;
+
+        if (round < 9) {
+            round++; 
+            document.getElementById('btnRoll').innerText = `TENDANG! (Ronde ${round})`;
+        } else {
+            if (myScore === aiScore) {
+                document.getElementById('status').innerText = "SERI! TENDANGAN PENENTU...";
+                round++;
+            } else {
+                showWinner();
+            }
+        }
+    }
+
+    function showWinner() {
+        isGameOver = true;
+        document.getElementById('standardScore').style.display = 'none';
+        document.getElementById('btnRoll').style.display = 'none';
+        document.getElementById('winnerView').style.display = 'block';
+        document.getElementById('btnReset').style.display = 'block';
+        
+        const winner = myScore > aiScore ? teams[selectedPlayer] : teams[selectedAI];
+        document.getElementById('imgWinner').src = winner.img;
+        document.getElementById('winnerNameText').innerText = winner.name;
+        document.getElementById('status').innerText = "PERTANDINGAN BERAKHIR!";
+    }
+
+    init();
+</script>
+</body>
+</html>
