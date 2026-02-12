@@ -189,10 +189,36 @@
             opacity: 0.9;
         }
 
+        .popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+}
        
     </style>
 </head>
 <body>
+
+    <div id="rulePopup" class="popup">
+    <div class="popup-content">
+        <h3>RULEBOOK</h3>
+        <img src="rulebook.png" class="rulebook-img">
+        <button onclick="closeRule()">TUTUP</button>
+    </div>
+</div>
 
 <div id="loadingScreen">
     <img src="logo.png" alt="Logo" class="loading-logo" onerror="this.src='https://via.placeholder.com/150?text=LOGO'">
@@ -216,7 +242,7 @@
         </div>
 
         <button class="menu-btn" onclick="showScreen('draftArea')">MAIN SEKARANG</button>
-        <button class="menu-btn" onclick="showScreen('rulebookView')">CARA BERMAIN</button>
+        <button class="menu-btn" onclick="openRule()">CARA BERMAIN</button>
         <button id="btnGame">KGAME</button>
     </div>
     <div id="rulebookView" style="display:none;">
@@ -301,10 +327,15 @@
         else { music.pause(); btn.innerText = "🎵 MUSIK: OFF"; btn.style.background = "#6c5ce7"; }
     }
 
-    function showScreen(id) {
-        ['mainMenu', 'rulebookView', 'draftArea', 'gameArea'].forEach(s => document.getElementById(s).style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-    }
+   function showScreen(id) {
+    const screens = ['mainMenu', 'rulebookView', 'draftArea', 'gameArea'];
+
+    screens.forEach(s => {
+        document.getElementById(s).style.display = 'none';
+    });
+
+    document.getElementById(id).style.removeProperty('display');
+}
 
     function init() {
         const pGrid = document.getElementById('playerGrid'), aGrid = document.getElementById('aiGrid');
@@ -386,6 +417,13 @@ tombol.onclick = function() {
     window.location.href = 'https://francopudge.github.io/game/';
 };
 
+function openRule() {
+    document.getElementById('rulePopup').style.display = 'flex';
+}
+
+function closeRule() {
+    document.getElementById('rulePopup').style.display = 'none';
+}
 </script>
 </body>
 </html>
